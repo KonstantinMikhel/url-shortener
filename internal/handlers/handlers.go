@@ -53,7 +53,7 @@ func HandleRedirect(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Redirect the user to the original URL
-	http.Redirect(writer, request, originalURL, http.StatusMovedPermanently)
+	http.Redirect(writer, request, originalURL, http.StatusTemporaryRedirect)
 }
 
 func generateShortURL() string {
