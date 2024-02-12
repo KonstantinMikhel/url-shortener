@@ -4,24 +4,15 @@ import (
 	"net/http"
 
 	"github.com/KonstantinMikhel/url-shortener/internal/handlers"
+	"github.com/go-chi/chi/v5"
 )
 
-func handleURL(writer http.ResponseWriter, request *http.Request) {
-	switch request.Method {
-	case http.MethodGet:
-		handlers.HandleRedirect(writer, request)
-	case http.MethodPost:
-		handlers.HandleShorten(writer, request)
-	default:
-		http.Error(writer, "Only GET and POST requests are allowed!", http.StatusBadRequest)
-	}
-}
-
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc(`/`, handleURL)
+	router := chi.NewRouter()
+	router.Get("/{shortURL}", handlers.HandleRedirect)
+	router.Post("/", handlers.HandleShorten)
 
-	err := http.ListenAndServe(`:8080`, mux)
+	err := http.ListenAndServe(":8080", router)
 	if err != nil {
 		panic(err)
 	}

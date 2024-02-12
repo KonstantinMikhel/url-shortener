@@ -5,7 +5,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
-	"strings"
+	"path"
 )
 
 var urls = make(map[string]string)
@@ -39,8 +39,8 @@ func HandleShorten(writer http.ResponseWriter, request *http.Request) {
 }
 
 func HandleRedirect(writer http.ResponseWriter, request *http.Request) {
-	shortURL := strings.TrimPrefix(request.URL.Path, "/")
-	if shortURL == "" {
+	shortURL := path.Base(request.URL.Path)
+	if shortURL == "." || shortURL == "/" {
 		http.Error(writer, "Shortened URL is missing in a request", http.StatusBadRequest)
 		return
 	}
