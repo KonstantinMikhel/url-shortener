@@ -17,9 +17,10 @@ func TestHandleShorten(t *testing.T) {
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
+	shortener := NewURLShortener("http://localhost:8080")
 
 	// Call the handler function with the created request and ResponseRecorder
-	http.HandlerFunc(HandleShorten).ServeHTTP(rr, req)
+	http.HandlerFunc(shortener.HandleShorten).ServeHTTP(rr, req)
 
 	// Check the status code
 	if status := rr.Code; status != http.StatusCreated {
@@ -36,8 +37,9 @@ func TestHandleShorten(t *testing.T) {
 }
 
 func TestHandleRedirect(t *testing.T) {
+	shortener := NewURLShortener("http://localhost:8080")
 	// Mock the URL mapping
-	urls["abcdefg"] = "http://example.com/original"
+	shortener.urls["abcdefg"] = "http://example.com/original"
 
 	// Create a request with the shortened URL
 	req, err := http.NewRequest("GET", "/abcdefg", nil)
@@ -49,7 +51,7 @@ func TestHandleRedirect(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	// Call the handler function with the created request and ResponseRecorder
-	http.HandlerFunc(HandleRedirect).ServeHTTP(rr, req)
+	http.HandlerFunc(shortener.HandleRedirect).ServeHTTP(rr, req)
 
 	// Check the status code
 	if status := rr.Code; status != http.StatusTemporaryRedirect {

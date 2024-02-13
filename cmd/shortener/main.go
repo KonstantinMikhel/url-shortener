@@ -3,16 +3,20 @@ package main
 import (
 	"net/http"
 
+	"github.com/KonstantinMikhel/url-shortener/internal/config"
 	"github.com/KonstantinMikhel/url-shortener/internal/handlers"
 	"github.com/go-chi/chi/v5"
 )
 
 func main() {
-	router := chi.NewRouter()
-	router.Get("/{shortURL}", handlers.HandleRedirect)
-	router.Post("/", handlers.HandleShorten)
+	cfg := config.NewConfig()
+	shortener := handlers.NewURLShortener(cfg.BaseURL)
 
-	err := http.ListenAndServe(":8080", router)
+	router := chi.NewRouter()
+	router.Get("/{shortURL}", shortener.HandleRedirect)
+	router.Post("/", shortener.HandleShorten)
+
+	err := http.ListenAndServe(cfg.HTTPServerAddress, router)
 	if err != nil {
 		panic(err)
 	}

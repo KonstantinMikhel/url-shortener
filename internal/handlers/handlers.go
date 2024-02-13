@@ -1,16 +1,25 @@
 package handlers
 
 import (
-	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
 	"path"
 )
 
-var urls = make(map[string]string)
+type URLShortener struct {
+	urls    map[string]string
+	baseURL string
+}
 
-func HandleShorten(writer http.ResponseWriter, request *http.Request) {
+func NewURLShortener(baseURL string) URLShortener {
+	return URLShortener{
+		urls:    map[string]string{},
+		baseURL: baseURL,
+	}
+}
+
+func (u URLShortener) HandleShorten(writer http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(writer, "Invalid request method", http.StatusBadRequest)
 		return
@@ -29,16 +38,16 @@ func HandleShorten(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	shortURL := generateShortURL()
-	urls[shortURL] = originalURL
+	u.urls[shortURL] = originalURL
 
 	writer.Header().Set("Content-Type", "text/plain")
 	writer.WriteHeader(http.StatusCreated)
 
-	fullShortenedURL := fmt.Sprintf("http://localhost:8080/%s", shortURL)
+	fullShortenedURL := u.baseURL + "/" + shortURL
 	writer.Write([]byte(fullShortenedURL))
 }
 
-func HandleRedirect(writer http.ResponseWriter, request *http.Request) {
+func (u URLShortener) HandleRedirect(writer http.ResponseWriter, request *http.Request) {
 	shortURL := path.Base(request.URL.Path)
 	if shortURL == "." || shortURL == "/" {
 		http.Error(writer, "Shortened URL is missing in a request", http.StatusBadRequest)
@@ -46,7 +55,7 @@ func HandleRedirect(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Retrieve the original URL
-	originalURL, found := urls[shortURL]
+	originalURL, found := u.urls[shortURL]
 	if !found {
 		http.Error(writer, "Shortened URL not found", http.StatusBadRequest)
 		return
